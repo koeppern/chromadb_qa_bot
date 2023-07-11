@@ -4,9 +4,7 @@
 
 # As LLM OpenAI's GPT-3.5 is used.
 # OpenAI's Emmedding function creates emendding for named PDF.
-# The loaded PDF is a part of a Wikipedia article about the tiny German town
-# Köppern which is unknown to GPT-3.5
-# A chromaDB is creates resp. loaded for named PDF.
+# The loaded PDF is a print-out of the Wikipedia article on Olivia Rodrigo
 
 # 2023-07-11, J. Köppern
 
@@ -26,9 +24,9 @@ from langchain.document_loaders.csv_loader import CSVLoader
 # -------------------------------------------------------
 # Parameters
 # -------------------------------------------------------
-create_retriever = True
+create_embeding = False
 
-filename_pdf = "docs/koeppern_town.pdf"
+filename_pdf = "docs/olivia_rodrigo.pdf"
 
 persist_directory = 'db'
 
@@ -55,16 +53,16 @@ def load_vector_db(create_embeding):
         # PDF loader
         loader = PyPDFLoader(filename_pdf)
 
-        documents = [loader.load()]
+        documents = loader.load()
 
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=100, 
             chunk_overlap=20)
 
 
-        texts = splitter.create_documents([document.page_content for document in documents if hasattr(document, 'page_content')])
-
-
+        texts = splitter.split_documents(
+            documents
+        )
 
 
         vectordb = Chroma.from_documents(
@@ -78,8 +76,8 @@ def load_vector_db(create_embeding):
         print("Load vectordb")
 
         vectordb = Chroma(
-            persist_directory=persist_directory#, 
-            #embedding_function=embeddings
+            persist_directory=persist_directory, 
+            embedding_function=embeddings
         )
         
     return vectordb
@@ -91,18 +89,24 @@ def load_vector_db(create_embeding):
 # -------------------------------------------------------
 # Main section of the script
 # -------------------------------------------------------
-load_dotenv(find_dotenv())
+load_dotenv(
+    find_dotenv(),
+    override=True
+)
 
-vectordb = load_vector_db(create_embeding=create_embeding)
+vectordb = load_vector_db(
+    create_embeding=create_embeding
+)
 
 # QA
 qa = create_retriever(vectordb=vectordb)
 
-query = "How many people live in Köppern"
+queries = ["Who is Olivia Rodrigo?", "Who is Albert Einstein?"]
 
-result = qa({"query": query})
+for query in queries:
+    result = qa({"query": query})
 
-print(result["result"])
+    print(result["result"])
 
-print(result["source_documents"])
+    print(result["source_documents"])
 
