@@ -33,6 +33,9 @@ persist_directory = 'db'
 # -------------------------------------------------------
 # Functions
 # -------------------------------------------------------
+def square_input(input):
+    return input**2
+
 def create_retriever(vectordb):
     qa = RetrievalQA.from_chain_type(
         llm=OpenAI(), 
@@ -91,21 +94,22 @@ def import_api_key():
 # -------------------------------------------------------
 # Main section of the script
 # -------------------------------------------------------
-import_api_key()
+if __name__ == '__main__':
+    import_api_key()
 
-vectordb = provide_vector_db(
-    create_embeding=create_embeding
-)
+    vectordb = provide_vector_db(
+        create_embeding=create_embeding
+    )
 
-# QA
-qa = create_retriever(vectordb=vectordb)
+    # QA
+    qa = create_retriever(vectordb=vectordb)
 
-queries = ["Who is Olivia Rodrigo?", "Who is Albert Einstein?"]
+    queries = ["Who is Olivia Rodrigo?", "Who is Albert Einstein?"]
 
-for query in queries:
-    result = qa({"query": query})
+    for query in queries:
+        result = qa({"query": query})
 
-    print(result["result"])
+        print(result["result"])
 
-    print(result["source_documents"])
+        print(result["source_documents"])
 
