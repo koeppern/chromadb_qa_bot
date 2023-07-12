@@ -1,0 +1,11 @@
+LICENSE
+README.md
+setup.py
+app/__init__.py
+app/app.py
+chromadb_qa_bot.egg-info/PKG-INFO
+chromadb_qa_bot.egg-info/SOURCES.txt
+chromadb_qa_bot.egg-info/dependency_links.txt
+chromadb_qa_bot.egg-info/top_level.txt
+tests/__init__.py
+tests/test_chroma-app.py
