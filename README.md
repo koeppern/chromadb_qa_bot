@@ -1,14 +1,20 @@
 # chromadb_qa_bot
 
-Provide a descriptive and catchy title for your project.
+Ask PDF a question using GPT-3.5-turbo, ChromaDB and LangChain.
 
 ## Project Description
 
-Briefly explain what your project is about, its main features, and its purpose.
+** Use of LangChain
+** Load a PDF file (also included in this repo)
+** Do word embedding via OpenAI Embedding API
+** Store result in ChromaDB and persist it
+** Antlerntive: Load existing ChromaDB
+** Ask the PDF a question using GPT-3.5-turbo
 
 ## Table of Contents
 
 Include a table of contents to help users navigate through the README.
+See also this [blog post](https://betterofjohn.com/uncategorized/custom-question-answering-qa-bot-transforming-pdf-interactions-with-langchain-and-chromadb/).
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -17,7 +23,8 @@ Include a table of contents to help users navigate through the README.
 
 ## Installation
 
-Explain the steps required to install and set up your project. Include any dependencies and provide example commands whenever necessary.
+** Create and activate Python enironment, e.g. via `conda create -n chromadb_qa_bot python=3.9` and `conda activate chromadb_qa_bot`
+** Install requirements, e. g. via `pip install -r requirements.txt`
 
 ## Usage
 
@@ -29,7 +36,7 @@ Indicate whether you welcome contributions to your project and provide guideline
 
 ## License
 
-Specify the license under which your project is distributed. For example, you can choose from popular open-source licenses like MIT, Apache, or GNU GPLv3. Include a license file in your repository for more details.
+Apache License, Version 2.0
 
 ## Additional Sections
 
