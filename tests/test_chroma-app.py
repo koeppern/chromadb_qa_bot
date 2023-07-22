@@ -2,7 +2,7 @@
 
 import unittest
 
-from chromadb_qa_bot.app.app import import_api_key
+from chromadb_qa_bot.app.app import load_api_key
 from chromadb_qa_bot.app.app import square_input
 
 class TestSquareInput(unittest.TestCase):

@@ -31,7 +31,6 @@ kiwisolver==1.4.4
 matplotlib==3.5.3
 matplotlib-inline==0.1.6
 multidict==6.0.4
--e git+https://github.com/koeppern/chromadb_qa_bot.git@257d280804d20f2562f9dcb0fee9c6f2c178bdf0#egg=my_project
 nest-asyncio==1.5.6
 numpy==1.21.6
 openai==0.26.5

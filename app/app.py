@@ -10,6 +10,7 @@
 
 import openai
 import os
+import sys
 from dotenv import load_dotenv, find_dotenv
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -20,11 +21,10 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders.csv_loader import CSVLoader
 
 
-
 # -------------------------------------------------------
 # Parameters
 # -------------------------------------------------------
-create_embeding = False
+create_embedding = False
 
 filename_pdf = "docs/olivia_rodrigo.pdf"
 
@@ -33,10 +33,16 @@ persist_directory = 'db'
 # -------------------------------------------------------
 # Functions
 # -------------------------------------------------------
-def square_input(input):
-    return input**2
+def create_retriever_and_answerer(vectordb):
+    """
+    Creates a retriever and answerer object for the given vector database.
 
-def create_retriever(vectordb):
+    Args:
+        vectordb (Chroma): The vector database.
+
+    Returns:
+        RetrievalQA: The retriever and answerer object.
+    """
     qa = RetrievalQA.from_chain_type(
         llm=OpenAI(), 
         chain_type="stuff", 
@@ -46,15 +52,26 @@ def create_retriever(vectordb):
 
     return qa
 
-def provide_vector_db(create_embeding):
+def provide_vector_db(create_embedding):
+    """
+    Provides the vector database.
+
+    Args:
+        create_embedding (bool): Whether to create the embedding or load an existing one.
+
+    Returns:
+        Chroma: The vector database.
+    """
     embeddings = OpenAIEmbeddings()
 
-
-    if create_embeding:
+    if create_embedding:
         print("Create vectordb")
-              
-        # PDF loader
-        loader = PyPDFLoader(filename_pdf)
+
+        try:
+            loader = PyPDFLoader(filename_pdf)
+        except FileNotFoundError:
+            print(f"File {filename_pdf} not found.")
+            sys.exit(1)
 
         documents = loader.load()
 
@@ -62,11 +79,7 @@ def provide_vector_db(create_embeding):
             chunk_size=100, 
             chunk_overlap=20)
 
-
-        texts = splitter.split_documents(
-            documents
-        )
-
+        texts = splitter.split_documents(documents)
 
         vectordb = Chroma.from_documents(
             documents=texts, 
@@ -78,38 +91,53 @@ def provide_vector_db(create_embeding):
     else:
         print("Load vectordb")
 
-        vectordb = Chroma(
-            persist_directory=persist_directory, 
-            embedding_function=embeddings
-        )
-        
+        try:
+            vectordb = Chroma(
+                persist_directory=persist_directory, 
+                embedding_function=embeddings
+            )
+        except:
+            print("Error loading ChromaDB.")
+            sys.exit(1)
+
     return vectordb
 
-def import_api_key():
-    load_dotenv(
-        find_dotenv(),
-    override=True
-)
-    
-# -------------------------------------------------------
-# Main section of the script
-# -------------------------------------------------------
-if __name__ == '__main__':
-    import_api_key()
+def load_api_key():
+    """
+    Loads the API key from the environment variables.
+    """
+    load_dotenv(find_dotenv(), override=True)
 
-    vectordb = provide_vector_db(
-        create_embeding=create_embeding
-    )
+def main_script(create_embedding, create_retriever_and_answerer, provide_vector_db, load_api_key):
+    """
+    The main script that executes the chat with the PDF document.
 
-    # QA
-    qa = create_retriever(vectordb=vectordb)
+    Args:
+        create_embedding (bool): Whether to create the embedding or load an existing one.
+        create_retriever_and_answerer (function): Function to create the retriever and answerer object.
+        provide_vector_db (function): Function to provide the vector database.
+        load_api_key (function): Function to load the API key.
+    """
+    load_api_key()
+
+    vectordb = provide_vector_db(create_embedding=create_embedding)
+
+    retriever_and_answerer = create_retriever_and_answerer(vectordb=vectordb)
 
     queries = ["Who is Olivia Rodrigo?", "Who is Albert Einstein?"]
 
     for query in queries:
-        result = qa({"query": query})
+        result = retriever_and_answerer({"query": query})
 
         print(result["result"])
-
         print(result["source_documents"])
 
+# -------------------------------------------------------
+# Main section of the script
+# -------------------------------------------------------
+if __name__ == '__main__':
+    main_script(
+        create_embedding, 
+        create_retriever_and_answerer, 
+        provide_vector_db, 
+        load_api_key)
