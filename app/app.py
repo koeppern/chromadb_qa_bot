@@ -17,7 +17,7 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import PyPDFLoader
+from langchain.document_loaders import JSONLoader, PyPDFLoader
 from langchain.document_loaders.csv_loader import CSVLoader
 
 
@@ -26,7 +26,7 @@ from langchain.document_loaders.csv_loader import CSVLoader
 # -------------------------------------------------------
 create_embedding = False
 
-filename_pdf = "docs/olivia_rodrigo.pdf"
+filename_pdf = "recipes.json"
 
 persist_directory = 'db'
 
@@ -44,10 +44,11 @@ def create_retriever_and_answerer(vectordb):
         RetrievalQA: The retriever and answerer object.
     """
     qa = RetrievalQA.from_chain_type(
-        llm=OpenAI(), 
-        chain_type="stuff", 
+        llm=OpenAI(),
+        chain_type="stuff",
         retriever=vectordb.as_retriever(),
         return_source_documents=True,
+        verbose=True
     )
 
     return qa
@@ -68,7 +69,7 @@ def provide_vector_db(create_embedding):
         print("Create vectordb")
 
         try:
-            loader = PyPDFLoader(filename_pdf)
+            loader = JSONLoader(filename_pdf, jq_schema='.', text_content=False)
         except FileNotFoundError:
             print(f"File {filename_pdf} not found.")
             sys.exit(1)
@@ -76,13 +77,13 @@ def provide_vector_db(create_embedding):
         documents = loader.load()
 
         splitter = RecursiveCharacterTextSplitter(
-            chunk_size=100, 
+            chunk_size=100,
             chunk_overlap=20)
 
         texts = splitter.split_documents(documents)
 
         vectordb = Chroma.from_documents(
-            documents=texts, 
+            documents=texts,
             embedding=embeddings,
             persist_directory=persist_directory
         )
@@ -91,14 +92,10 @@ def provide_vector_db(create_embedding):
     else:
         print("Load vectordb")
 
-        try:
-            vectordb = Chroma(
-                persist_directory=persist_directory, 
-                embedding_function=embeddings
-            )
-        except:
-            print("Error loading ChromaDB.")
-            sys.exit(1)
+        vectordb = Chroma(
+            persist_directory=persist_directory,
+            embedding_function=embeddings
+        )
 
     return vectordb
 
@@ -124,7 +121,7 @@ def main_script(create_embedding, create_retriever_and_answerer, provide_vector_
 
     retriever_and_answerer = create_retriever_and_answerer(vectordb=vectordb)
 
-    queries = ["Who is Olivia Rodrigo?", "Who is Albert Einstein?"]
+    queries = ["Welche Rezepte enthalten Bohnen?"]
 
     for query in queries:
         result = retriever_and_answerer({"query": query})
@@ -137,7 +134,7 @@ def main_script(create_embedding, create_retriever_and_answerer, provide_vector_
 # -------------------------------------------------------
 if __name__ == '__main__':
     main_script(
-        create_embedding, 
-        create_retriever_and_answerer, 
-        provide_vector_db, 
+        create_embedding,
+        create_retriever_and_answerer,
+        provide_vector_db,
         load_api_key)
