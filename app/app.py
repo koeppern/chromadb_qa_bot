@@ -49,6 +49,7 @@ def create_retriever_and_answerer(vectordb):
         retriever=vectordb.as_retriever(),
         return_source_documents=True,
         verbose=True,
+        # top_k=10,
     )
 
     return qa
